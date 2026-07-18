@@ -1,0 +1,85 @@
+---
+title: "Architecture"
+sidebarTitle: "Architecture"
+description: "How PAM connects users to your infrastructure securely."
+---
+
+PAM uses a proxy-based architecture. Users never connect directly to your databases or servers — everything goes through the [Gateway](/documentation/platform/gateways/overview). This keeps your infrastructure isolated while providing secure, auditable access.
+
+## Components
+
+**Infisical Platform** — the control plane. Stores account credentials, manages permissions, and hosts the web interface.
+
+**Gateway** — a lightweight service you deploy in your private network. It proxies connections to your databases and servers, injects credentials, and records sessions.
+
+**Client** — the user's browser (Web Access) or CLI. Connects to the Gateway through an encrypted tunnel.
+
+## How a Connection Works
+
+When a user connects to an [account](/documentation/platform/pam/accounts/overview):
+
+1. **User requests access** — clicks Launch in the browser or runs the CLI command
+2. **Infisical checks permissions** — verifies the user has a [membership](/documentation/platform/pam/concepts/access-control) with the right role
+3. **[Template](/documentation/platform/pam/templates/overview) rules are enforced** — MFA, reason requirement, etc.
+4. **Connection is established** — an encrypted tunnel is created between the client and Gateway
+5. **Gateway fetches credentials** — retrieves them from Infisical
+6. **Gateway connects to the target** — using the credentials
+7. **Traffic flows through the Gateway** — user interacts with the database/server
+8. **Session is recorded** — Gateway captures and uploads session activity
+
+The user never sees the credentials. The database/server never sees the user directly.
+
+## Network Security
+
+The Gateway uses outbound connections only:
+
+- **No inbound ports** — your firewall doesn't need to allow any inbound traffic
+- **Outbound to Infisical** — for credential retrieval and session uploads
+- **Outbound to your infrastructure** — to connect to databases and servers
+
+<Tip>
+Your databases and servers stay completely isolated from the internet. The Gateway sits inside your network and reaches out; nothing reaches in.
+</Tip>
+
+## Encryption
+
+All connections are encrypted:
+
+- **Client to Gateway** — end-to-end encrypted tunnel
+- **Gateway to Infisical** — TLS
+- **Session recordings** — encrypted before upload
+
+The Relay server (which routes traffic between clients and Gateways) cannot decrypt or inspect the traffic passing through it.
+
+## Recording Architecture
+
+Recording happens at the Gateway:
+
+1. Traffic flows through the Gateway
+2. Gateway captures session events
+3. Events are encrypted and cached locally
+4. Events upload to Infisical in real-time
+5. If connectivity drops, recording continues locally and syncs when restored
+
+This ensures no data is lost, even during network issues.
+
+## Deployment Options
+
+| Setup | Use case |
+|-------|----------|
+| **Single Gateway** | Small environments, single network |
+| **Gateway per network** | Multiple VPCs or on-prem segments |
+| **Gateway Pool** | High availability, load balancing |
+
+For deployment instructions, see [Deploy a Gateway](/documentation/platform/gateways/gateway-deployment).
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Deploy a Gateway" icon="server" href="/documentation/platform/gateways/gateway-deployment">
+    Deploy a Gateway in your network.
+  </Card>
+  <Card title="Launch Your First Session" icon="rocket" href="/documentation/platform/pam/quick-starts/launch-first-session">
+    Connect to a database in under 10 minutes.
+  </Card>
+</CardGroup>
