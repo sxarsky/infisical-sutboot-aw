@@ -1,0 +1,32 @@
+# Skyramp Workspace Configuration
+workspace:
+  repoName: sxarsky/infisical-sutboot-aw
+  repoUrl: https://github.com/sxarsky/infisical-sutboot-aw
+metadata:
+  schemaVersion: v1
+  executorVersion: v1.3.34
+  createdAt: "2026-07-18T22:46:07.849Z"
+  updatedAt: "2026-07-18T22:46:07.851Z"
+services:
+  - serviceName: infisical-backend-backend
+    language: typescript
+    framework: playwright
+    testDirectory: tests/skyramp/backend
+    api:
+      schemaPath: http://localhost:8080/api/docs/json
+      authType: bearer
+      authHeader: Authorization
+      authScheme: Bearer
+      baseUrl: http://localhost:8080/api
+    runtimeDetails:
+      serverStartCommand: docker compose -f docker-compose.bdd.yml up -d --build backend
+      runtime: docker
+      dockerNetwork: infisical-sutboot-aw_default
+  - serviceName: infisical-frontend-frontend
+    language: typescript
+    framework: playwright
+    testDirectory: tests/skyramp/frontend
+    runtimeDetails:
+      serverStartCommand: docker compose -f docker-compose.bdd.yml up -d --build frontend
+      runtime: docker
+      dockerNetwork: infisical-sutboot-aw_default
